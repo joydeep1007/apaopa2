@@ -361,9 +361,52 @@
                 scale: 0.5;
             }
         }
+        
+        /* Music Control Styles */
+        .music-control {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            background: rgba(255, 105, 180, 0.9);
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.2em;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 105, 180, 0.4);
+        }
+        
+        .music-control:hover {
+            background: rgba(255, 105, 180, 1);
+            transform: scale(1.1);
+        }
+        
+        .music-control.playing {
+            animation: musicPulse 2s infinite;
+        }
+        
+        @keyframes musicPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
     </style>
 </head>
 <body>
+    <!-- Background Music -->
+    <audio id="backgroundMusic" loop preload="auto">
+        <!-- You can replace these with your preferred romantic songs -->
+        <source src="papon.mp3" type="audio/mpeg">
+        <!-- Fallback: You can add local music files here -->
+        <!-- <source src="romantic-song.mp3" type="audio/mpeg"> -->
+        Your browser does not support the audio element.
+    </audio>
+    
+    <!-- Music Control Button -->
+    <button class="music-control" id="musicToggle" onclick="toggleMusic()">🎵</button>
+    
     <div class="game-container">
         <!-- Floating hearts animation -->
         <div class="hearts-animation"></div>
@@ -446,7 +489,7 @@
         
         // Level 1 Game Variables
         let canvas, ctx;
-        let player = { x: 275, y: 350, width: 50, height: 30, speed: 6.5 };
+        let player = { x: 275, y: 350, width: 50, height: 30, speed: 8.0 };
         let hearts = [];
         let clouds = [];
         let gameRunning = false;
@@ -474,6 +517,128 @@
             }
         ];
         
+        // Music system
+        let backgroundMusic = null;
+        let musicPlaying = false;
+        
+        // Initialize music
+        function initMusic() {
+            backgroundMusic = document.getElementById('backgroundMusic');
+            if (backgroundMusic) {
+                backgroundMusic.volume = 0.3; // Set to 30% volume
+                // Add event listeners for audio loading
+                backgroundMusic.addEventListener('loadeddata', () => {
+                    console.log('Music loaded successfully');
+                });
+                backgroundMusic.addEventListener('error', (e) => {
+                    console.log('Music failed to load:', e);
+                    createRomanticTune(); // Fallback to generated music
+                });
+            }
+        }
+        
+        // Create a simple romantic tune using Web Audio API
+        function createRomanticTune() {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                function playNote(frequency, duration, startTime) {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.value = frequency;
+                    oscillator.type = 'sine';
+                    
+                    gainNode.gain.setValueAtTime(0, startTime);
+                    gainNode.gain.linearRampToValueAtTime(0.1, startTime + 0.1);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+                    
+                    oscillator.start(startTime);
+                    oscillator.stop(startTime + duration);
+                }
+                
+                // Simple romantic melody
+                const melody = [
+                    {note: 523.25, duration: 0.5}, // C5
+                    {note: 587.33, duration: 0.5}, // D5
+                    {note: 659.25, duration: 0.5}, // E5
+                    {note: 523.25, duration: 0.5}, // C5
+                    {note: 587.33, duration: 1.0}, // D5
+                    {note: 659.25, duration: 0.5}, // E5
+                    {note: 698.46, duration: 0.5}, // F5
+                    {note: 783.99, duration: 1.0}, // G5
+                ];
+                
+                function playMelody() {
+                    if (!musicPlaying) return;
+                    
+                    let currentTime = audioContext.currentTime;
+                    melody.forEach((noteData, index) => {
+                        playNote(noteData.note, noteData.duration, currentTime);
+                        currentTime += noteData.duration;
+                    });
+                    
+                    // Repeat melody every 4 seconds
+                    setTimeout(() => {
+                        if (musicPlaying) playMelody();
+                    }, 4000);
+                }
+                
+                window.playRomanticTune = playMelody;
+            } catch (error) {
+                console.log('Web Audio API not supported, using silent mode');
+            }
+        }
+        
+        // Toggle music on/off
+        function toggleMusic() {
+            const musicButton = document.getElementById('musicToggle');
+            
+            if (!musicPlaying) {
+                startMusic();
+                musicButton.textContent = '🔇';
+                musicButton.classList.add('playing');
+                musicPlaying = true;
+            } else {
+                stopMusic();
+                musicButton.textContent = '🎵';
+                musicButton.classList.remove('playing');
+                musicPlaying = false;
+            }
+        }
+        
+        function startMusic() {
+            if (backgroundMusic) {
+                // Reset the music to beginning and try to play
+                backgroundMusic.currentTime = 0;
+                backgroundMusic.play()
+                    .then(() => {
+                        console.log('Music started successfully');
+                    })
+                    .catch(e => {
+                        console.log('Audio play failed:', e);
+                        // If regular audio fails, try the Web Audio API fallback
+                        if (window.playRomanticTune) {
+                            console.log('Falling back to generated music');
+                            window.playRomanticTune();
+                        }
+                    });
+            } else if (window.playRomanticTune) {
+                console.log('Using generated music');
+                window.playRomanticTune();
+            }
+        }
+        
+        function stopMusic() {
+            if (backgroundMusic) {
+                backgroundMusic.pause();
+                backgroundMusic.currentTime = 0;
+            }
+        }
+        
         // Initialize game
         function init() {
             canvas = document.getElementById('gameCanvas');
@@ -490,6 +655,9 @@
             // Set canvas size explicitly
             canvas.width = 600;
             canvas.height = 400;
+            
+            // Initialize music system
+            initMusic();
             
             startFloatingHearts();
         }
@@ -540,6 +708,17 @@
             if (!canvas || !ctx) {
                 init();
             }
+            
+            // Force start music when game begins (user has interacted)
+            console.log('Starting game and music...');
+            if (!musicPlaying) {
+                const musicButton = document.getElementById('musicToggle');
+                musicPlaying = true;
+                musicButton.textContent = '🔇';
+                musicButton.classList.add('playing');
+                startMusic();
+            }
+            
             showScreen('level1Screen');
             initLevel1();
         }
