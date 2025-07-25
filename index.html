@@ -95,7 +95,7 @@
             border: 3px solid #ff69b4;
             border-radius: 15px;
             background: linear-gradient(to bottom, #87ceeb, #e0f6ff);
-            margin: 20px 0;
+            margin: 15px 0;
         }
         
         .stats {
@@ -103,16 +103,16 @@
             justify-content: space-between;
             width: 100%;
             max-width: 600px;
-            margin: 10px 0;
+            margin: 8px 0;
         }
         
         .stat-item {
             background: rgba(255, 105, 180, 0.2);
-            padding: 10px 20px;
+            padding: 8px 16px;
             border-radius: 20px;
             color: #ff1493;
             font-weight: 600;
-            font-size: 1.1em;
+            font-size: 1em;
         }
         
         .puzzle-container {
@@ -258,17 +258,17 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin: 30px 0;
+            margin: 20px 0;
         }
         
         .hit-counter {
             background: rgba(255, 105, 180, 0.2);
-            padding: 15px 30px;
+            padding: 12px 25px;
             border-radius: 20px;
             color: #ff1493;
             font-weight: 600;
-            font-size: 1.3em;
-            margin-bottom: 30px;
+            font-size: 1.2em;
+            margin-bottom: 20px;
         }
         
         .sticker-area {
@@ -377,23 +377,23 @@
         </div>
         
         <!-- Level 1: Heart Catching Game -->
-        <div class="screen" id="level1Screen">
+        <div class="screen" id="level1Screen" style="padding-top: 80px;">
             <div class="level-indicator">Level 1 💕</div>
-            <h2>Catch My Hearts! 💕</h2>
-            <p>Use arrow keys to move and catch 5 hearts! Avoid the gray clouds! ☁️</p>
+            <h2 style="font-size: 1.8em; margin-bottom: 10px; margin-top: 0px;">Catch My Hearts! 💕</h2>
+            <p style="font-size: 1em; margin-bottom: 15px;">Use arrow keys to move and catch 5 hearts! Avoid the gray clouds! ☁️</p>
             <div class="stats">
                 <div class="stat-item">Hearts: <span id="heartsCount">0</span>/5</div>
                 <div class="stat-item">Lives: <span id="livesCount">3</span></div>
             </div>
             <canvas id="gameCanvas" width="600" height="400"></canvas>
-            <p>Use ← → arrow keys to move</p>
+            <p style="font-size: 1em; margin-top: 10px;">Use ← → arrow keys to move</p>
         </div>
         
         <!-- Level 2: Sticker Hitting Game -->
         <div class="screen" id="level2Screen">
             <div class="level-indicator">Level 2 💝</div>
-            <h2>Hit Me With Your Love! </h2>
-            <p>Click on me to hit me with your love sticker! Hit me 10 times to clear the level!</p>
+            <h2 style="font-size: 1.8em; margin-bottom: 10px;">Hit Me With Your Love! 💕</h2>
+            <p style="font-size: 1em; margin-bottom: 15px;">Click on me to hit me with your love sticker! Hit me 10 times to clear the level!</p>
             <div class="sticker-game-container">
                 <div class="hit-counter">Hits: <span id="hitCount">0</span>/10</div>
                 <div class="sticker-area">
@@ -405,7 +405,7 @@
                     </div>
                 </div>
             </div>
-            <p id="stickerMessage">Click on my sticker to hit me! 😄</p>
+            <p id="stickerMessage" style="font-size: 1em; margin-top: 10px;">Click on my sticker to hit me! 😄</p>
         </div>
         
         <!-- Level 3: Quiz -->
@@ -477,7 +477,20 @@
         // Initialize game
         function init() {
             canvas = document.getElementById('gameCanvas');
+            if (!canvas) {
+                console.error('Canvas not found!');
+                return;
+            }
             ctx = canvas.getContext('2d');
+            if (!ctx) {
+                console.error('Could not get canvas context!');
+                return;
+            }
+            
+            // Set canvas size explicitly
+            canvas.width = 600;
+            canvas.height = 400;
+            
             startFloatingHearts();
         }
         
@@ -510,15 +523,35 @@
             });
             document.getElementById(screenId).classList.add('active');
             currentScreen = screenId;
+            
+            // If switching to level1, ensure canvas is ready
+            if (screenId === 'level1Screen') {
+                setTimeout(() => {
+                    if (!canvas || !ctx) {
+                        console.log('Canvas not ready, initializing...');
+                        init();
+                    }
+                }, 100);
+            }
         }
         
         function startGame() {
+            // Ensure canvas is properly initialized before starting Level 1
+            if (!canvas || !ctx) {
+                init();
+            }
             showScreen('level1Screen');
             initLevel1();
         }
         
         // Level 1: Heart Catching Game
         function initLevel1() {
+            // Double-check canvas initialization
+            if (!canvas || !ctx) {
+                console.log('Re-initializing canvas...');
+                init();
+            }
+            
             gameState.level1 = { hearts: 0, lives: 3, complete: false };
             updateLevel1Stats();
             
@@ -828,7 +861,10 @@
         }
         
         // Initialize when page loads
-        window.onload = init;
+        window.onload = function() {
+            console.log('Page loaded, initializing game...');
+            init();
+        };
     </script>
 </body>
 </html>
