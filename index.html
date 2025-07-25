@@ -21,17 +21,42 @@
             justify-content: center;
             align-items: center;
             overflow: hidden;
+            position: relative;
+        }
+        
+        /* Background Video Styles */
+        .background-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            z-index: -2;
+            opacity: 0.9; /* Increased to 90% - characters will be very visible */
+            pointer-events: none;
+        }
+        
+        .video-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.05) 0%, rgba(255, 192, 203, 0.03) 40%, rgba(255, 182, 193, 0.02) 70%, transparent 100%);
+            z-index: -1;
+            pointer-events: none;
         }
         
         .game-container {
             width: 800px;
             height: 600px;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 30px;
-            box-shadow: 0 20px 40px rgba(255, 105, 180, 0.3);
+            background: transparent;
+            border-radius: 0;
+            box-shadow: none;
             position: relative;
             overflow: hidden;
-            border: 3px solid #ff69b4;
+            border: none;
         }
         
         .screen {
@@ -53,23 +78,25 @@
         }
         
         h1 {
-            color: #ff1493;
+            color: #ff0066;
             font-size: 2.5em;
             margin-bottom: 20px;
-            text-shadow: 2px 2px 4px rgba(255, 105, 180, 0.3);
+            text-shadow: 3px 3px 6px rgba(255, 105, 180, 0.8), 0 0 20px rgba(255, 20, 147, 0.6);
         }
         
         h2 {
-            color: #ff69b4;
+            color: #ff1493;
             font-size: 2em;
             margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(255, 105, 180, 0.7), 0 0 15px rgba(255, 105, 180, 0.5);
         }
         
         p {
-            color: #d63384;
+            color: #ff1493;
             font-size: 1.2em;
             margin-bottom: 20px;
             line-height: 1.6;
+            text-shadow: 1px 1px 3px rgba(255, 105, 180, 0.6), 0 0 10px rgba(255, 20, 147, 0.4);
         }
         
         .btn {
@@ -275,8 +302,8 @@
             position: relative;
             width: 400px;
             height: 300px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
+            background: transparent;
+            border-radius: 0;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -395,6 +422,15 @@
     </style>
 </head>
 <body>
+    <!-- Background Video -->
+    <video class="background-video" autoplay loop muted playsinline>
+        <source src="loml.mp4" type="video/mp4">
+        <!-- You can add your video file here. Just replace "your-video.mp4" with your actual video filename -->
+    </video>
+    
+    <!-- Video Overlay for better contrast -->
+    <div class="video-overlay"></div>
+    
     <!-- Background Music -->
     <audio id="backgroundMusic" loop preload="auto">
         <!-- You can replace these with your preferred romantic songs -->
@@ -520,6 +556,47 @@
         // Music system
         let backgroundMusic = null;
         let musicPlaying = false;
+        
+        // Video system
+        let backgroundVideo = null;
+        
+        // Initialize video
+        function initVideo() {
+            backgroundVideo = document.querySelector('.background-video');
+            if (backgroundVideo) {
+                backgroundVideo.volume = 0; // Ensure no audio
+                backgroundVideo.muted = true; // Double ensure muted
+                
+                // Add event listeners for video
+                backgroundVideo.addEventListener('loadeddata', () => {
+                    console.log('Background video loaded successfully');
+                });
+                backgroundVideo.addEventListener('error', (e) => {
+                    console.log('Background video failed to load:', e);
+                    // Hide video element if it fails to load
+                    if (backgroundVideo) {
+                        backgroundVideo.style.display = 'none';
+                    }
+                });
+            }
+        }
+        
+        // Start background video
+        function startBackgroundVideo() {
+            if (backgroundVideo) {
+                backgroundVideo.play().catch(e => {
+                    console.log('Video autoplay failed:', e);
+                    // Video will remain paused if autoplay is blocked
+                });
+            }
+        }
+        
+        // Stop background video
+        function stopBackgroundVideo() {
+            if (backgroundVideo) {
+                backgroundVideo.pause();
+            }
+        }
         
         // Initialize music
         function initMusic() {
@@ -659,6 +736,9 @@
             // Initialize music system
             initMusic();
             
+            // Initialize video system
+            initVideo();
+            
             startFloatingHearts();
         }
         
@@ -718,6 +798,9 @@
                 musicButton.classList.add('playing');
                 startMusic();
             }
+            
+            // Start background video
+            startBackgroundVideo();
             
             showScreen('level1Screen');
             initLevel1();
@@ -1036,6 +1119,10 @@
                 level2: { complete: false },
                 level3: { currentQuestion: 0, complete: false }
             };
+            
+            // Stop background video when returning to welcome screen
+            stopBackgroundVideo();
+            
             showScreen('welcomeScreen');
         }
         
