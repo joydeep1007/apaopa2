@@ -459,9 +459,9 @@
         <div class="screen" id="level1Screen" style="padding-top: 80px;">
             <div class="level-indicator">Level 1 💕</div>
             <h2 style="font-size: 1.8em; margin-bottom: 10px; margin-top: 0px;">Catch My Hearts! 💕</h2>
-            <p style="font-size: 1em; margin-bottom: 15px;">Use arrow keys to move and catch 5 hearts! Avoid the gray clouds! ☁️</p>
+            <p style="font-size: 1em; margin-bottom: 15px;">Use arrow keys to move and catch 10 hearts! Avoid the gray clouds! ☁️</p>
             <div class="stats">
-                <div class="stat-item">Hearts: <span id="heartsCount">0</span>/5</div>
+                <div class="stat-item">Hearts: <span id="heartsCount">0</span>/10</div>
                 <div class="stat-item">Lives: <span id="livesCount">3</span></div>
             </div>
             <canvas id="gameCanvas" width="600" height="400"></canvas>
@@ -867,7 +867,7 @@
                         gameState.level1.hearts++;
                         updateLevel1Stats();
                         
-                        if (gameState.level1.hearts >= 5) {
+                        if (gameState.level1.hearts >= 10) {
                             gameRunning = false;
                             completeLevel1();
                         }
